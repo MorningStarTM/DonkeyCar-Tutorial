@@ -83,4 +83,32 @@ class ActorCritic(nn.Module):
         return action.item()
     
 
+    def calculate_loss(self, gamma=0.9):
+        rewards = []
+        dis_reward = 0
+        for reward in self.rewards[::-1]:
+            dis_reward = reward + gamma * dis_reward
+            rewards.insert(0, dis_reward)
+
+        rewards = torch.tensor(rewards)
+        rewards = (rewards - rewards.mean()) / (rewards.std())
+
+        loss = 0
+
+        for logprob, value, reward in zip(self.logprobs, self.state_values, rewards):
+            advantage = reward - value.item()
+            action_loss = -logprob * advantage
+            value_loss = F.smooth_l1_loss(value, reward)    
+            loss += (action_loss + value_loss)
+        
+        return loss
     
+
+    def clearMemory(self):
+        del self.logprobs[:]
+        del self.state_values[:]
+        del self.rewards[:]
+
+
+    
+
