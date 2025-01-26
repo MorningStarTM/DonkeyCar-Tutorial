@@ -110,5 +110,11 @@ class ActorCritic(nn.Module):
         del self.rewards[:]
 
 
-    
+    def save_model(self, model_path):
+        torch.save(self.state_dict(), model_path)
+        print(f"model saved at {model_path}")
+
+    def load_model(self, model_path):
+        self.load_state_dict(torch.load(model_path))
+        print(f"model loaded from {model_path}")
 
